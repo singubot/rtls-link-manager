@@ -22,6 +22,7 @@ pub enum FrameType {
     TdoaEstimatorStatus = 32,
     TdoaAnchorStats = 33,
     TdoaPositionEstimatorStatus = 34,
+    TdoaPositionEstimatorEvents = 35,
 }
 
 #[derive(Debug, Clone)]
@@ -129,6 +130,9 @@ pub fn decode_command_frame(data: &[u8], device_ip: &str) -> Result<Value, CoreE
         x if x == FrameType::TdoaAnchorStats as u8 => decode_tdoa_anchor_stats(frame)?,
         x if x == FrameType::TdoaPositionEstimatorStatus as u8 => {
             decode_tdoa_position_estimator_status(frame)?
+        }
+        x if x == FrameType::TdoaPositionEstimatorEvents as u8 => {
+            decode_tdoa_position_estimator_events(frame)?
         }
         _ => {
             return Err(CoreError::Device(DeviceError::InvalidResponse {
@@ -425,6 +429,124 @@ fn decode_tdoa_position_estimator_status(frame: BinaryFrame<'_>) -> Result<Value
             "positionDeltaM": compare_delta_mm as f64 / 1000.0,
         },
         "rows": rows,
+    }))
+}
+
+fn decode_tdoa_position_estimator_events(frame: BinaryFrame<'_>) -> Result<Value, CoreError> {
+    if frame.status != 0 {
+        return decode_ack(frame);
+    }
+
+    let mut r = Reader::new(frame.payload);
+    let version = r.u8().map_err(CoreError::Other)?;
+    let capacity = r.u8().map_err(CoreError::Other)?;
+    let row_capacity = r.u8().map_err(CoreError::Other)?;
+    let count = r.u8().map_err(CoreError::Other)?;
+    let total = r.u32().map_err(CoreError::Other)?;
+
+    let mut events = Vec::with_capacity(count as usize);
+    for _ in 0..count {
+        let sequence = r.u32().map_err(CoreError::Other)?;
+        let timestamp_ms = r.u32().map_err(CoreError::Other)?;
+        let flags = r.u16().map_err(CoreError::Other)?;
+        let mode = r.u8().map_err(CoreError::Other)?;
+        let input_rows = r.u8().map_err(CoreError::Other)?;
+        let selected_rows = r.u8().map_err(CoreError::Other)?;
+        let unique_anchors = r.u8().map_err(CoreError::Other)?;
+        let iterations = r.u8().map_err(CoreError::Other)?;
+        let row_count = r.u8().map_err(CoreError::Other)?;
+        if row_count > row_capacity {
+            return Err(CoreError::Other(format!(
+                "Jump event row count {} exceeds capacity {}",
+                row_count, row_capacity
+            )));
+        }
+        let dt_us = r.u32().map_err(CoreError::Other)?;
+        let solve_us = r.u32().map_err(CoreError::Other)?;
+        let rmse_mm = r.u32().map_err(CoreError::Other)?;
+        let residual_scale_mm = r.u32().map_err(CoreError::Other)?;
+        let delta_mm = r.u32().map_err(CoreError::Other)?;
+        let horizontal_delta_mm = r.u32().map_err(CoreError::Other)?;
+        let vertical_delta_mm = r.i32().map_err(CoreError::Other)?;
+        let speed_mmps = r.u32().map_err(CoreError::Other)?;
+        let accel_mmps2 = r.u32().map_err(CoreError::Other)?;
+        let prev_x_mm = r.i32().map_err(CoreError::Other)?;
+        let prev_y_mm = r.i32().map_err(CoreError::Other)?;
+        let prev_z_mm = r.i32().map_err(CoreError::Other)?;
+        let candidate_x_mm = r.i32().map_err(CoreError::Other)?;
+        let candidate_y_mm = r.i32().map_err(CoreError::Other)?;
+        let candidate_z_mm = r.i32().map_err(CoreError::Other)?;
+
+        let mut rows = Vec::with_capacity(row_count as usize);
+        for _ in 0..row_count {
+            let anchor_a = r.u8().map_err(CoreError::Other)?;
+            let anchor_b = r.u8().map_err(CoreError::Other)?;
+            let age_us = r.u32().map_err(CoreError::Other)?;
+            let tdoa_mm = r.i32().map_err(CoreError::Other)?;
+            let residual_mm = r.i32().map_err(CoreError::Other)?;
+            let base_weight_q8 = r.u8().map_err(CoreError::Other)?;
+            let final_weight_q8 = r.u8().map_err(CoreError::Other)?;
+            rows.push(json!({
+                "pair": format!("{}{}", anchor_a, anchor_b),
+                "anchorA": anchor_a,
+                "anchorB": anchor_b,
+                "ageUs": age_us,
+                "tdoaM": tdoa_mm as f64 / 1000.0,
+                "residualM": residual_mm as f64 / 1000.0,
+                "baseWeight": base_weight_q8 as f64 / 255.0,
+                "finalWeight": final_weight_q8 as f64 / 255.0,
+            }));
+        }
+
+        events.push(json!({
+            "sequence": sequence,
+            "timestampMs": timestamp_ms,
+            "flags": flags,
+            "flagReasons": {
+                "delta": (flags & (1 << 0)) != 0,
+                "velocity": (flags & (1 << 1)) != 0,
+                "acceleration": (flags & (1 << 2)) != 0,
+                "slowSolve": (flags & (1 << 3)) != 0,
+                "highRmse": (flags & (1 << 4)) != 0,
+                "highResidualScale": (flags & (1 << 5)) != 0,
+                "lowRows": (flags & (1 << 6)) != 0,
+            },
+            "mode": mode_name(mode),
+            "modeId": mode,
+            "inputRows": input_rows,
+            "selectedRows": selected_rows,
+            "uniqueAnchors": unique_anchors,
+            "iterations": iterations,
+            "dtUs": dt_us,
+            "solveUs": solve_us,
+            "rmseM": rmse_mm as f64 / 1000.0,
+            "residualScaleM": residual_scale_mm as f64 / 1000.0,
+            "deltaM": delta_mm as f64 / 1000.0,
+            "horizontalDeltaM": horizontal_delta_mm as f64 / 1000.0,
+            "verticalDeltaM": vertical_delta_mm as f64 / 1000.0,
+            "speedMps": speed_mmps as f64 / 1000.0,
+            "accelMps2": accel_mmps2 as f64 / 1000.0,
+            "previous": {
+                "x": prev_x_mm as f64 / 1000.0,
+                "y": prev_y_mm as f64 / 1000.0,
+                "z": prev_z_mm as f64 / 1000.0,
+            },
+            "candidate": {
+                "x": candidate_x_mm as f64 / 1000.0,
+                "y": candidate_y_mm as f64 / 1000.0,
+                "z": candidate_z_mm as f64 / 1000.0,
+            },
+            "rows": rows,
+        }));
+    }
+
+    Ok(json!({
+        "version": version,
+        "capacity": capacity,
+        "rowCapacity": row_capacity,
+        "count": count,
+        "total": total,
+        "events": events,
     }))
 }
 
@@ -907,5 +1029,66 @@ mod tests {
         assert_eq!(value["rows"][0]["pair"], "27");
         assert_eq!(value["rows"][0]["residualM"], -0.083);
         assert_eq!(value["rows"][0]["baseWeight"], 1.0);
+    }
+
+    #[test]
+    fn decodes_tdoa_position_estimator_events_frame() {
+        let mut payload = vec![1, 8, 6, 1];
+        push_u32(&mut payload, 3);
+        push_u32(&mut payload, 3);
+        push_u32(&mut payload, 123456);
+        push_u16(&mut payload, 0b0100_0111);
+        payload.push(1);
+        payload.push(8);
+        payload.push(6);
+        payload.push(7);
+        payload.push(3);
+        payload.push(1);
+        push_u32(&mut payload, 15000);
+        push_u32(&mut payload, 4200);
+        push_u32(&mut payload, 142);
+        push_u32(&mut payload, 180);
+        push_u32(&mut payload, 1250);
+        push_u32(&mut payload, 1200);
+        push_i32(&mut payload, -350);
+        push_u32(&mut payload, 8300);
+        push_u32(&mut payload, 120000);
+        push_i32(&mut payload, 1000);
+        push_i32(&mut payload, 2000);
+        push_i32(&mut payload, -500);
+        push_i32(&mut payload, 2200);
+        push_i32(&mut payload, 2100);
+        push_i32(&mut payload, -850);
+        payload.push(2);
+        payload.push(7);
+        push_u32(&mut payload, 42000);
+        push_i32(&mut payload, -312);
+        push_i32(&mut payload, 88);
+        payload.push(255);
+        payload.push(96);
+
+        let value = decode_command_frame(
+            &frame(FrameType::TdoaPositionEstimatorEvents, payload),
+            "192.168.1.50",
+        )
+        .expect("events frame");
+
+        assert_eq!(value["version"], 1);
+        assert_eq!(value["capacity"], 8);
+        assert_eq!(value["count"], 1);
+        assert_eq!(value["total"], 3);
+        assert_eq!(value["events"][0]["sequence"], 3);
+        assert_eq!(value["events"][0]["mode"], "robust_3d");
+        assert_eq!(value["events"][0]["flagReasons"]["delta"], true);
+        assert_eq!(value["events"][0]["flagReasons"]["velocity"], true);
+        assert_eq!(value["events"][0]["flagReasons"]["lowRows"], true);
+        assert_eq!(value["events"][0]["deltaM"], 1.25);
+        assert_eq!(value["events"][0]["verticalDeltaM"], -0.35);
+        assert_eq!(value["events"][0]["previous"]["x"], 1.0);
+        assert_eq!(value["events"][0]["candidate"]["z"], -0.85);
+        assert_eq!(value["events"][0]["rows"][0]["pair"], "27");
+        assert_eq!(value["events"][0]["rows"][0]["ageUs"], 42000);
+        assert_eq!(value["events"][0]["rows"][0]["tdoaM"], -0.312);
+        assert_eq!(value["events"][0]["rows"][0]["finalWeight"], 96.0 / 255.0);
     }
 }

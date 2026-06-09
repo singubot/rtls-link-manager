@@ -20,6 +20,7 @@ pub const STRUCTURED_RESPONSE_COMMANDS: &[&str] = &[
     "tdoa-distances",
     "tdoa-anchor-stats",
     "tdoa-estimator-status",
+    "tdoa-estimator-events",
 ];
 
 /// Check if a command is expected to return a structured response.
@@ -193,6 +194,7 @@ mod tests {
         assert!(is_structured_response_command("save-config-as -name test"));
         assert!(is_structured_response_command("tdoa-distances"));
         assert!(is_structured_response_command("tdoa-anchor-stats"));
+        assert!(is_structured_response_command("tdoa-estimator-events"));
         assert!(!is_structured_response_command("version"));
         assert!(!is_structured_response_command("reboot"));
         assert!(!is_structured_response_command("save-config"));
