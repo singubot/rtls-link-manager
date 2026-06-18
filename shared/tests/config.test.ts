@@ -312,7 +312,7 @@ describe('validateConfig', () => {
       uwb: { tdoaMatcherPolicy: 3 } as any
     });
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain('TDoA matcher policy must be 0 or 1');
+    expect(result.errors).toContain('TDoA matcher policy must be 0, 1, or 2');
   });
 
   it('validates TDoA estimator controls', () => {

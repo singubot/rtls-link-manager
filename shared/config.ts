@@ -179,8 +179,9 @@ export function validateConfig(config: Partial<DeviceConfig>): ConfigValidationR
 
     if (config.uwb.tdoaMatcherPolicy !== undefined &&
       config.uwb.tdoaMatcherPolicy !== 0 &&
-      config.uwb.tdoaMatcherPolicy !== 1) {
-      errors.push('TDoA matcher policy must be 0 or 1');
+      config.uwb.tdoaMatcherPolicy !== 1 &&
+      config.uwb.tdoaMatcherPolicy !== 2) {
+      errors.push('TDoA matcher policy must be 0, 1, or 2');
     }
 
     if (config.uwb.tdoaEstimatorMode !== undefined &&

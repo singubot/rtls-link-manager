@@ -132,7 +132,7 @@ export interface UwbConfig {
   tdoaAnchorTelemetryEnable?: 0 | 1; // Periodic anchor stats UDP telemetry
   tdoaAnchorTelemetryIntervalMs?: number; // Telemetry interval in milliseconds (250-60000)
   tdoaAnchorTelemetryPort?: number; // UDP destination port for anchor stats telemetry
-  tdoaMatcherPolicy?: 0 | 1;    // 0=Youngest, 1=Random
+  tdoaMatcherPolicy?: 0 | 1 | 2; // 0=Youngest, 1=Random, 2=Geometric
   // Dynamic anchor positioning (TDoA tags only)
   dynamicAnchorPosEnabled?: 0 | 1;  // 0=static (use configured positions), 1=dynamic
   anchorLayout?: AnchorLayout;      // Layout for dynamic position calculation

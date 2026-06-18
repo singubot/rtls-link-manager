@@ -373,6 +373,7 @@ export function UWBSection({ config, onChange, onApply, onApplyBatch, isExpertMo
               >
                 <option value={0}>Youngest</option>
                 <option value={1}>Random</option>
+                <option value={2}>Geometric</option>
               </select>
             </div>
             <div className={styles.field}>
