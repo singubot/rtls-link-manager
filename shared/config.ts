@@ -179,15 +179,17 @@ export function validateConfig(config: Partial<DeviceConfig>): ConfigValidationR
 
     if (config.uwb.tdoaMatcherPolicy !== undefined &&
       config.uwb.tdoaMatcherPolicy !== 0 &&
-      config.uwb.tdoaMatcherPolicy !== 1) {
-      errors.push('TDoA matcher policy must be 0 or 1');
+      config.uwb.tdoaMatcherPolicy !== 1 &&
+      config.uwb.tdoaMatcherPolicy !== 2) {
+      errors.push('TDoA matcher policy must be 0, 1, or 2');
     }
 
     if (config.uwb.tdoaEstimatorMode !== undefined &&
       config.uwb.tdoaEstimatorMode !== 0 &&
       config.uwb.tdoaEstimatorMode !== 1 &&
-      config.uwb.tdoaEstimatorMode !== 2) {
-      errors.push('TDoA estimator mode must be 0, 1, or 2');
+      config.uwb.tdoaEstimatorMode !== 2 &&
+      config.uwb.tdoaEstimatorMode !== 3) {
+      errors.push('TDoA estimator mode must be 0, 1, 2, or 3');
     }
 
     if (config.uwb.tdoaEstimatorDiag !== undefined &&

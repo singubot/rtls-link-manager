@@ -307,7 +307,7 @@ pub struct UwbConfig {
     /// UDP destination port for TDoA anchor stats telemetry
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tdoa_anchor_telemetry_port: Option<u16>,
-    /// TDoA tag matcher policy: 0=Youngest, 1=Random
+    /// TDoA tag matcher policy: 0=Youngest, 1=Random, 2=Geometric (window-information scored)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tdoa_matcher_policy: Option<u8>,
     /// Dynamic anchor positioning enable (0=static, 1=dynamic)
