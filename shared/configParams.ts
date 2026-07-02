@@ -66,7 +66,7 @@ export function configToParams(config: DeviceConfig): Array<[string, string, str
         }
         const anchors = config.uwb.anchors.slice(0, MAX_CONFIGURABLE_ANCHORS);
         if (config.uwb.mode === 4) {
-          const tagAnchorError = validateStaticTagAnchorList(anchors, config.uwb.use2DEstimator ?? 1);
+          const tagAnchorError = validateStaticTagAnchorList(anchors, config.uwb.use2DEstimator ?? 1, config.uwb.tdoaEstimatorMode);
           if (tagAnchorError) {
             throw new Error(tagAnchorError);
           }
@@ -115,6 +115,8 @@ export function configToParams(config: DeviceConfig): Array<[string, string, str
     if (config.uwb.rmseThreshold !== undefined) params.push(['uwb', 'rmseThreshold', String(config.uwb.rmseThreshold)]);
     if (config.uwb.tdoaEstimatorMode !== undefined) params.push(['uwb', 'tdoaEstimatorMode', String(config.uwb.tdoaEstimatorMode)]);
     if (config.uwb.tdoaEstimatorDiag !== undefined) params.push(['uwb', 'tdoaEstimatorDiag', String(config.uwb.tdoaEstimatorDiag)]);
+    if (config.uwb.tdoaWindowCadenceMs !== undefined) params.push(['uwb', 'tdoaWindowCadenceMs', String(config.uwb.tdoaWindowCadenceMs)]);
+    if (config.uwb.tdoaWindowAgeMs !== undefined) params.push(['uwb', 'tdoaWindowAgeMs', String(config.uwb.tdoaWindowAgeMs)]);
     // UWB Radio settings (TDoA mode only, expert mode)
     if (config.uwb.channel !== undefined) params.push(['uwb', 'channel', String(config.uwb.channel)]);
     if (config.uwb.dwMode !== undefined) params.push(['uwb', 'dwMode', String(config.uwb.dwMode)]);

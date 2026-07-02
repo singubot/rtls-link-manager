@@ -223,6 +223,8 @@ mod tests {
                 rmse_threshold: None,
                 tdoa_estimator_mode: None,
                 tdoa_estimator_diag: None,
+                tdoa_window_cadence_ms: None,
+                tdoa_window_age_ms: None,
                 channel: None,
                 dw_mode: None,
                 tx_power_level: None,

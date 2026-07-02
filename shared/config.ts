@@ -58,7 +58,7 @@ export function validateConfig(config: Partial<DeviceConfig>): ConfigValidationR
 
     if (shouldValidateStaticTagAnchors && hasAnchorGeometry) {
       const anchorError = isTagTdoa
-        ? validateStaticTagAnchorList(config.uwb.anchors!, use3DEstimator ? 0 : 1)
+        ? validateStaticTagAnchorList(config.uwb.anchors!, use3DEstimator ? 0 : 1, config.uwb.tdoaEstimatorMode)
         : validateAnchorList(config.uwb.anchors!);
       if (anchorError) {
         errors.push(anchorError);

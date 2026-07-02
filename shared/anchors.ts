@@ -127,14 +127,21 @@ export function validateAnchorList(anchors: AnchorConfig[]): string | null {
   return null;
 }
 
-export function validateStaticTagAnchorList(anchors: AnchorConfig[], use2DEstimator: 0 | 1 = 1): string | null {
+export function validateStaticTagAnchorList(
+  anchors: AnchorConfig[],
+  use2DEstimator: 0 | 1 = 1,
+  tdoaEstimatorMode?: number
+): string | null {
   const anchorError = validateAnchorList(anchors);
   if (anchorError) {
     return anchorError;
   }
 
   const use3DEstimator = use2DEstimator === 0;
-  const minAnchors = use3DEstimator ? 6 : 4;
+  // Legacy (0) and sliding-window (3) 3D estimators solve from 4 anchors;
+  // robust (1) and compare (2) require 6.
+  const relaxed3DMode = tdoaEstimatorMode === 0 || tdoaEstimatorMode === 3;
+  const minAnchors = use3DEstimator ? (relaxed3DMode ? 4 : 6) : 4;
   if (anchors.length < minAnchors) {
     return `${use3DEstimator ? '3D' : '2D'} TAG_TDOA static geometry requires at least ${minAnchors} anchors`;
   }
