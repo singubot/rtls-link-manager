@@ -77,6 +77,9 @@ pub struct Device {
     /// Whether UDP log streaming is enabled at runtime
     #[serde(skip_serializing_if = "Option::is_none")]
     pub log_udp_enabled: Option<bool>,
+    /// Whether the drone tag is in firmware sleep mode
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sleeping: Option<bool>,
     /// Dynamic anchor positions (calculated from inter-anchor ToF)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dynamic_anchors: Option<Vec<DynamicAnchorPosition>>,
@@ -580,6 +583,7 @@ mod tests {
             log_udp_port: None,
             log_serial_enabled: None,
             log_udp_enabled: None,
+            sleeping: None,
             dynamic_anchors: None,
             health: None,
         };

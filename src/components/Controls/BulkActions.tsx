@@ -43,6 +43,18 @@ export function BulkActions({ devices }: BulkActionsProps) {
         </button>
         <button
           onClick={() =>
+            executeBulk(Commands.sleep(), {
+              confirm: `Put ${devices.length} device(s) into sleep mode?`,
+            })
+          }
+        >
+          Sleep
+        </button>
+        <button onClick={() => executeBulk(Commands.wake())}>
+          Wake
+        </button>
+        <button
+          onClick={() =>
             executeBulk(Commands.reboot(), {
               confirm: `Reboot ${devices.length} devices?`,
             })

@@ -26,6 +26,7 @@ export interface Device {
   logUdpPort?: number;      // UDP port for log streaming
   logSerialEnabled?: boolean; // Runtime: Serial logging enabled
   logUdpEnabled?: boolean;  // Runtime: UDP log streaming enabled
+  sleeping?: boolean;       // True if drone tag is in firmware sleep mode
   // Dynamic anchor positions (from heartbeat, TDoA tags only)
   dynamicAnchors?: DynamicAnchorPosition[];
   // Backend-calculated health summary

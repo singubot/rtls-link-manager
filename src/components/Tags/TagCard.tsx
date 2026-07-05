@@ -39,6 +39,17 @@ export function TagCard({ device, selected, onSelect, onConfigure, isExpertMode 
     await sendCommand(Commands.start());
   };
 
+  const handleSleepToggle = async () => {
+    if (device.sleeping) {
+      await sendCommand(Commands.wake());
+      return;
+    }
+
+    if (confirm(`Put tag ${device.ip} into sleep mode?`)) {
+      await sendCommand(Commands.sleep());
+    }
+  };
+
   // Format telemetry status with fallback for unknown
   const formatStatus = (value: boolean | undefined, trueText: string, falseText: string) => {
     if (value === undefined) return '?';
@@ -98,6 +109,14 @@ export function TagCard({ device, selected, onSelect, onConfigure, isExpertMode 
             {formatStatus(device.uwbEnabled, 'On', 'Off')}
           </span>
         </div>
+        {device.sleeping !== undefined && (
+          <div className={styles.telemetryRow}>
+            <span className={styles.telemetryLabel}>State:</span>
+            <span className={device.sleeping ? styles.statusMuted : styles.statusOk}>
+              {device.sleeping ? 'Sleeping' : 'Awake'}
+            </span>
+          </div>
+        )}
         <div className={styles.telemetryRow}>
           <span className={styles.telemetryLabel}>RF Fwd:</span>
           <span className={
@@ -147,8 +166,11 @@ export function TagCard({ device, selected, onSelect, onConfigure, isExpertMode 
         <button onClick={handleToggleLed} disabled={loading}>
           {ledState ? 'LED On' : 'LED Off'}
         </button>
-        <button onClick={handleStart} disabled={loading}>
+        <button onClick={handleStart} disabled={loading || device.sleeping}>
           Start
+        </button>
+        <button onClick={handleSleepToggle} disabled={loading}>
+          {device.sleeping ? 'Wake' : 'Sleep'}
         </button>
         <button onClick={onConfigure} disabled={loading}>
           Config

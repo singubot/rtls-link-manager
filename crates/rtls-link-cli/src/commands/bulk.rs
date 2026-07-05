@@ -28,6 +28,12 @@ pub async fn run_bulk(
         BulkCommands::Start(target) => {
             run_bulk_command(Commands::start(), &target, timeout, json, strict).await
         }
+        BulkCommands::Sleep(target) => {
+            run_bulk_command(Commands::sleep(), &target, timeout, json, strict).await
+        }
+        BulkCommands::Wake(target) => {
+            run_bulk_command(Commands::wake(), &target, timeout, json, strict).await
+        }
         BulkCommands::Cmd(args) => {
             run_bulk_raw_command(&args.command, &args, timeout, json, strict).await
         }

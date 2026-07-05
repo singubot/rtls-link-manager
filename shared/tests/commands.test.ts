@@ -24,6 +24,11 @@ describe('Commands', () => {
   it('builds estimator status command', () => {
     expect(Commands.tdoaEstimatorStatus()).toBe('tdoa-estimator-status');
   });
+
+  it('builds sleep control commands', () => {
+    expect(Commands.sleep()).toBe('sleep');
+    expect(Commands.wake()).toBe('wake');
+  });
 });
 
 describe('isStructuredResponseCommand', () => {

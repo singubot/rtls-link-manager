@@ -62,6 +62,13 @@ fn calculate_tag_health(device: &Device) -> DeviceHealth {
     let mut issues = Vec::new();
     let mut has_telemetry = false;
 
+    if device.sleeping == Some(true) {
+        return DeviceHealth {
+            level: HealthLevel::Healthy,
+            issues: Vec::new(),
+        };
+    }
+
     if device.sending_pos.is_some()
         || device.anchors_seen.is_some()
         || device.origin_sent.is_some()
@@ -155,6 +162,7 @@ mod tests {
             log_udp_port: None,
             log_serial_enabled: None,
             log_udp_enabled: None,
+            sleeping: None,
             dynamic_anchors: None,
             health: None,
         }

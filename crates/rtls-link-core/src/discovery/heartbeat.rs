@@ -122,6 +122,11 @@ fn device_from_status(status: RTLS_DEVICE_STATUS_DATA, source_ip: &str) -> Devic
                 .flags
                 .contains(RtlsDeviceStatusFlags::RTLS_DEVICE_STATUS_FLAG_LOG_UDP_ENABLED),
         ),
+        sleeping: Some(
+            status
+                .flags
+                .contains(RtlsDeviceStatusFlags::RTLS_DEVICE_STATUS_FLAG_SLEEPING),
+        ),
         dynamic_anchors,
         health: None,
     };
@@ -230,6 +235,20 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_mavlink_status_sleeping() {
+        let packet = status_packet(RTLS_DEVICE_STATUS_DATA {
+            role: RtlsDeviceRole::RTLS_DEVICE_ROLE_TAG_TDOA,
+            flags: RtlsDeviceStatusFlags::RTLS_DEVICE_STATUS_FLAG_SLEEPING,
+            short_addr: CharArray::<8>::from("3"),
+            ..Default::default()
+        });
+
+        let device = parse_heartbeat(&packet, "10.0.0.3".to_string()).unwrap();
+        assert_eq!(device.sleeping, Some(true));
+        assert_eq!(device.health.unwrap().level, crate::health::HealthLevel::Healthy);
+    }
+
+    #[test]
     fn test_prune_stale_devices() {
         let mut devices: HashMap<String, (Device, Instant)> = HashMap::new();
 
@@ -257,6 +276,7 @@ mod tests {
             log_udp_port: None,
             log_serial_enabled: None,
             log_udp_enabled: None,
+            sleeping: None,
             dynamic_anchors: None,
             health: None,
         };

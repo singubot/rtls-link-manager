@@ -38,13 +38,19 @@ impl OutputFormatter for TableOutput {
 
         let mut table = Table::new();
         table.set_content_arrangement(ContentArrangement::Dynamic);
-        table.set_header(vec!["IP", "ID", "Role", "UWB Addr", "Firmware", "MAV ID"]);
+        table.set_header(vec!["IP", "ID", "Role", "State", "UWB Addr", "Firmware", "MAV ID"]);
 
         for device in devices {
+            let state = if device.sleeping == Some(true) {
+                "Sleeping"
+            } else {
+                "Awake"
+            };
             table.add_row(vec![
                 Cell::new(&device.ip),
                 Cell::new(&device.id),
                 Cell::new(device.role.display_name()),
+                Cell::new(state),
                 Cell::new(&device.uwb_short),
                 Cell::new(&device.firmware),
                 Cell::new(device.mav_sys_id.to_string()),
@@ -63,6 +69,10 @@ impl OutputFormatter for TableOutput {
         lines.push(format!("  Firmware:   {}", device.firmware));
         lines.push(format!("  MAV SysID:  {}", device.mav_sys_id));
         lines.push(format!("  MAC:        {}", device.mac));
+        if let Some(sleeping) = device.sleeping {
+            let state = if sleeping { "Sleeping" } else { "Awake" };
+            lines.push(format!("  State:      {}", state));
+        }
 
         if let Some(health) = health {
             let icon = Self::health_icon(&health.level);

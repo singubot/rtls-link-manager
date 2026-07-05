@@ -50,6 +50,9 @@ export function DeviceCard({ device, selected, onSelect, onConfigure }: DeviceCa
         <div><span>UWB:</span> {device.uwbShort}</div>
         <div><span>MAV ID:</span> {device.mavSysId}</div>
         <div><span>FW:</span> {device.firmware}</div>
+        {device.sleeping !== undefined && (
+          <div><span>State:</span> {device.sleeping ? 'Sleeping' : 'Awake'}</div>
+        )}
       </div>
 
       {device.role === 'tag_tdoa' && (

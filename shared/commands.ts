@@ -26,6 +26,8 @@ export const Commands = {
   getLedState: () => 'get-led2-state',
   reboot: () => 'reboot',
   start: () => 'write -group uwb -name uwbEnable -data "1"',
+  sleep: () => 'sleep',
+  wake: () => 'wake',
 
   // System info
   getVersion: () => 'version',

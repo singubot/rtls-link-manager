@@ -123,6 +123,16 @@ impl Commands {
         "write -group uwb -name uwbEnable -data \"1\""
     }
 
+    /// Put a drone tag into safety-checked sleep mode.
+    pub fn sleep() -> &'static str {
+        "sleep"
+    }
+
+    /// Wake a sleeping drone tag and restart the ESP32S3.
+    pub fn wake() -> &'static str {
+        "wake"
+    }
+
     // ==================== System info commands ====================
 
     /// Get firmware version
@@ -195,6 +205,14 @@ mod tests {
         assert!(is_structured_response_command("tdoa-anchor-stats"));
         assert!(!is_structured_response_command("version"));
         assert!(!is_structured_response_command("reboot"));
+        assert!(!is_structured_response_command("sleep"));
+        assert!(!is_structured_response_command("wake"));
         assert!(!is_structured_response_command("save-config"));
+    }
+
+    #[test]
+    fn test_sleep_control_commands() {
+        assert_eq!(Commands::sleep(), "sleep");
+        assert_eq!(Commands::wake(), "wake");
     }
 }

@@ -581,6 +581,12 @@ pub enum BulkCommands {
     /// Start positioning on all devices
     Start(BulkTargetArgs),
 
+    /// Put all targeted drone tags into sleep mode
+    Sleep(BulkTargetArgs),
+
+    /// Wake all targeted sleeping drone tags
+    Wake(BulkTargetArgs),
+
     /// Send a raw command to all devices
     Cmd(BulkCmdArgs),
 }
