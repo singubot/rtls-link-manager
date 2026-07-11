@@ -57,7 +57,7 @@ export function AnchorListSection({
         pendingAnchorsRef.current = null;
         try {
           if (config.uwb.mode === 4 && config.uwb.dynamicAnchorPosEnabled !== 1) {
-            const anchorError = validateStaticTagAnchorList(anchorsToApply, config.uwb.use2DEstimator ?? 1);
+            const anchorError = validateStaticTagAnchorList(anchorsToApply, config.uwb.use2DEstimator ?? 1, config.uwb.tdoaEstimatorMode);
             if (anchorError) {
               throw new Error(anchorError);
             }

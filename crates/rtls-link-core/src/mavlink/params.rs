@@ -362,6 +362,16 @@ pub const PARAMS: &[ParamEntry] = &[
         name: "tdoaEstimatorDiag",
     },
     ParamEntry {
+        id: "UWB_WIN_CAD",
+        group: "uwb",
+        name: "tdoaWindowCadenceMs",
+    },
+    ParamEntry {
+        id: "UWB_WIN_AGE",
+        group: "uwb",
+        name: "tdoaWindowAgeMs",
+    },
+    ParamEntry {
         id: "UWB_CHAN",
         group: "uwb",
         name: "channel",

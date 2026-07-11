@@ -44,7 +44,7 @@ export function UWBSection({ config, onChange, onApply, onApplyBatch, isExpertMo
       }
 
       const anchors = config.uwb.anchors || [];
-      const anchorError = validateStaticTagAnchorList(anchors, config.uwb.use2DEstimator ?? 1);
+      const anchorError = validateStaticTagAnchorList(anchors, config.uwb.use2DEstimator ?? 1, config.uwb.tdoaEstimatorMode);
       if (anchorError) {
         setModeApplyError(anchorError);
         return false;
@@ -373,6 +373,7 @@ export function UWBSection({ config, onChange, onApply, onApplyBatch, isExpertMo
               >
                 <option value={0}>Youngest</option>
                 <option value={1}>Random</option>
+                <option value={2}>Geometric</option>
               </select>
             </div>
             <div className={styles.field}>
@@ -388,8 +389,63 @@ export function UWBSection({ config, onChange, onApply, onApplyBatch, isExpertMo
                 <option value={1}>Robust</option>
                 <option value={0}>Legacy</option>
                 <option value={2}>Compare</option>
+                <option value={3}>Sliding Window</option>
               </select>
             </div>
+            {config.uwb.tdoaEstimatorMode === 3 && (
+              <>
+                <div className={styles.field}>
+                  <label>Window Cadence (ms)</label>
+                  <input
+                    type="number"
+                    min={5}
+                    max={200}
+                    step={5}
+                    value={config.uwb.tdoaWindowCadenceMs ?? 20}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      const val = raw === '' ? 20 : Number(raw);
+                      onChange('uwb', 'tdoaWindowCadenceMs', val);
+                    }}
+                    onBlur={(e) => {
+                      const raw = e.target.value;
+                      const val = raw === '' ? 20 : Number(raw);
+                      if (!Number.isFinite(val) || val < 5 || val > 200) return;
+                      onChange('uwb', 'tdoaWindowCadenceMs', val);
+                      onApply('uwb', 'tdoaWindowCadenceMs', val);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+                    Position solve/emit period of the sliding-window estimator.
+                  </span>
+                </div>
+                <div className={styles.field}>
+                  <label>Window Age (ms)</label>
+                  <input
+                    type="number"
+                    min={50}
+                    max={350}
+                    step={10}
+                    value={config.uwb.tdoaWindowAgeMs ?? 150}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      const val = raw === '' ? 150 : Number(raw);
+                      onChange('uwb', 'tdoaWindowAgeMs', val);
+                    }}
+                    onBlur={(e) => {
+                      const raw = e.target.value;
+                      const val = raw === '' ? 150 : Number(raw);
+                      if (!Number.isFinite(val) || val < 50 || val > 350) return;
+                      onChange('uwb', 'tdoaWindowAgeMs', val);
+                      onApply('uwb', 'tdoaWindowAgeMs', val);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+                    Oldest TDoA measurement age used by the sliding window.
+                  </span>
+                </div>
+              </>
+            )}
             <div className={styles.field}>
               <label>Estimator Diagnostics</label>
               <select

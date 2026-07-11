@@ -304,16 +304,17 @@ fn validate_tag_anchor_requirements_for_estimator(
         return Err("use2DEstimator must be 0 or 1".to_string());
     }
     if let Some(v) = tdoa_estimator_mode {
-        if v > 2 {
-            return Err("tdoaEstimatorMode must be 0, 1, or 2".to_string());
+        if v > 3 {
+            return Err("tdoaEstimatorMode must be 0, 1, 2, or 3".to_string());
         }
     }
 
     let use_3d_estimator = use_2d_estimator == 0;
     let legacy_3d_estimator = use_3d_estimator && tdoa_estimator_mode == Some(0);
+    let window_3d_estimator = use_3d_estimator && tdoa_estimator_mode == Some(3);
     let min_anchors = if !use_3d_estimator {
         4
-    } else if legacy_3d_estimator {
+    } else if legacy_3d_estimator || window_3d_estimator {
         LEGACY_3D_MIN_ANCHORS
     } else {
         ROBUST_3D_MIN_ANCHORS
@@ -340,8 +341,8 @@ fn validate_dynamic_tag_anchor_requirements(config: &DeviceConfig) -> Result<(),
         }
     }
     if let Some(v) = config.uwb.tdoa_estimator_mode {
-        if v > 2 {
-            return Err("tdoaEstimatorMode must be 0, 1, or 2".to_string());
+        if v > 3 {
+            return Err("tdoaEstimatorMode must be 0, 1, 2, or 3".to_string());
         }
     }
     if let Some(v) = config.uwb.tdoa_estimator_diag {
@@ -617,6 +618,20 @@ pub fn config_to_params(config: &DeviceConfig) -> Result<Vec<ParamTuple>, String
             v.to_string(),
         ));
     }
+    if let Some(v) = config.uwb.tdoa_window_cadence_ms {
+        params.push((
+            "uwb".to_string(),
+            "tdoaWindowCadenceMs".to_string(),
+            v.to_string(),
+        ));
+    }
+    if let Some(v) = config.uwb.tdoa_window_age_ms {
+        params.push((
+            "uwb".to_string(),
+            "tdoaWindowAgeMs".to_string(),
+            v.to_string(),
+        ));
+    }
     if let Some(v) = config.uwb.channel {
         params.push(("uwb".to_string(), "channel".to_string(), v.to_string()));
     }
@@ -842,6 +857,8 @@ mod tests {
                 rmse_threshold: None,
                 tdoa_estimator_mode: None,
                 tdoa_estimator_diag: None,
+                tdoa_window_cadence_ms: None,
+                tdoa_window_age_ms: None,
                 channel: None,
                 dw_mode: None,
                 tx_power_level: None,
@@ -934,6 +951,8 @@ mod tests {
                 rmse_threshold: Some(0.8),
                 tdoa_estimator_mode: Some(2),
                 tdoa_estimator_diag: Some(1),
+                tdoa_window_cadence_ms: None,
+                tdoa_window_age_ms: None,
                 channel: None,
                 dw_mode: None,
                 tx_power_level: None,
@@ -1376,6 +1395,8 @@ mod tests {
                 rmse_threshold: None,
                 tdoa_estimator_mode: None,
                 tdoa_estimator_diag: None,
+                tdoa_window_cadence_ms: None,
+                tdoa_window_age_ms: None,
                 channel: None,
                 dw_mode: None,
                 tx_power_level: None,
@@ -1682,6 +1703,8 @@ mod tests {
                 rmse_threshold: None,
                 tdoa_estimator_mode: None,
                 tdoa_estimator_diag: None,
+                tdoa_window_cadence_ms: None,
+                tdoa_window_age_ms: None,
                 channel: None,
                 dw_mode: None,
                 tx_power_level: None,
@@ -2147,6 +2170,8 @@ mod tests {
                 rmse_threshold: None,
                 tdoa_estimator_mode: None,
                 tdoa_estimator_diag: None,
+                tdoa_window_cadence_ms: None,
+                tdoa_window_age_ms: None,
                 channel: None,
                 dw_mode: None,
                 tx_power_level: None,
